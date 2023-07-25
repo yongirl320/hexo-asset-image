@@ -39,19 +39,15 @@ hexo.extend.filter.register('after_post_render', function(data){
       $('img').each(function(){
         if ($(this).attr('src')){
 
-          var imgLazyLoad = false;
-          if ($(this).attr('data-src')){
-              imgLazyLoad = true;
-          }
+          var srcAttr = 'src';
 
-          if (imgLazyLoad) {
-              src = $(this).attr('data-src')
-          } else {
-              src = $(this).attr('src')
+          //if use img lazyload theme
+          if ($(this).attr('data-src')){
+              srcAttr = 'data-src';
           }
 
           // For windows style path, we replace '\' to '/'.
-          var src = src.replace('\\', '/');
+          var src = $(this).attr(srcAttr).replace('\\', '/');
           if(!(/http[s]*.*|\/\/.*/.test(src)
             || /^\s+\//.test(src)
             || /^\s*\/uploads|images\//.test(src))) {
@@ -67,11 +63,15 @@ hexo.extend.filter.register('after_post_render', function(data){
             srcArray.shift();
             src = srcArray.join('/');
 
-            if (imgLazyLoad) {
-                $(this).attr('data-src', config.root + link + src);
-            } else {
-                $(this).attr('src', config.root + link + src);
+            // a link to the image
+            var parentElm = $(this).parent();
+            if (parentElm.get(0).tagName == 'a' 
+              && parentElm.attr('href') === $(this).attr(srcAttr)) {
+                parentElm.attr('href', config.root + link + src);
             }
+
+            $(this).attr(srcAttr, config.root + link + src);
+            
             console.info&&console.info("update link as:-->"+config.root + link + src);
           }
         }else{
